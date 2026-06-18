@@ -1,0 +1,35 @@
+{
+  "collections": [
+    {
+      "path": "photos",
+      "schema": {
+        "id": "string",
+        "src": "string",
+        "alt": "string",
+        "date": "string",
+        "caption": "string",
+        "title": "string?",
+        "likes": "number",
+        "scale": "number?",
+        "rotate": "number?",
+        "shiftX": "number?",
+        "shiftY": "number?",
+        "filter": "string?",
+        "cardSize": "string?",
+        "createdAt": "timestamp?"
+      },
+      "rules": {
+        "allow": {
+          "read": "true",
+          "create": "true",
+          "update": "true",
+          "delete": "true"
+        }
+      }
+    }
+  ],
+  "rules": {
+    "version": "2",
+    "service": "cloud.firestore"
+  }
+}
