@@ -2,13 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDuAOf59tmTguJr0rvgvDutt-G-UYy04_c",
-  authDomain: "luminous-appliance-jszp9.firebaseapp.com",
-  projectId: "luminous-appliance-jszp9",
-  storageBucket: "luminous-appliance-jszp9.firebasestorage.app",
-  messagingSenderId: "230978222356",
-  appId: "1:230978222356:web:18c0a922dc9573ea6eaa01"
+  apiKey: "AIzaSyAJ5nECgP0YNgcmMq_JaEVM5iHkSZaaVx0",
+  authDomain: "july2024-cfec0.firebaseapp.com",
+  projectId: "july2024-cfec0",
+  storageBucket: "july2024-cfec0.firebasestorage.app",
+  messagingSenderId: "1054235512375",
+  appId: "1:1054235512375:web:f6b520d23159dc7e6c79b2"
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, "ai-studio-6e5f7052-4a76-4951-b93b-50ffd1b89363");
+export const db = getFirestore(app);
