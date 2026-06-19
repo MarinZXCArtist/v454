@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PhotoMemory } from '../types';
 import { Heart, Plus, Trash2, Camera, Sparkles, X, HeartHandshake, Upload, Sliders, Eye, Pencil, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -73,6 +73,27 @@ export default function PhotoSection({ photos, onAddPhoto, onDeletePhoto, onLike
   ];
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [showQuoteBubble, setShowQuoteBubble] = useState(true);
+
+  // Lock body scroll when any modal is open, so the lightbox always appears centered in the viewport
+  useEffect(() => {
+    const anyModalOpen = !!selectedPhoto || !!editingPhoto || !!photoToDelete;
+    if (anyModalOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [selectedPhoto, editingPhoto, photoToDelete]);
 
   // Sort photos: newest date first, then by id
   const sortedPhotos = [...photos].sort((a, b) => {
