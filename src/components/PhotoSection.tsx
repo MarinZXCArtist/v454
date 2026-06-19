@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { PhotoMemory } from '../types';
 import { Heart, Plus, Trash2, Camera, Sparkles, X, HeartHandshake, Upload, Sliders, Eye, Pencil, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -73,27 +74,6 @@ export default function PhotoSection({ photos, onAddPhoto, onDeletePhoto, onLike
   ];
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [showQuoteBubble, setShowQuoteBubble] = useState(true);
-
-  // Lock body scroll when any modal is open, so the lightbox always appears centered in the viewport
-  useEffect(() => {
-    const anyModalOpen = !!selectedPhoto || !!editingPhoto || !!photoToDelete;
-    if (anyModalOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.width = '100%';
-      return () => {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
-        document.body.style.width = '';
-        window.scrollTo(0, scrollY);
-      };
-    }
-  }, [selectedPhoto, editingPhoto, photoToDelete]);
 
   // Sort photos: newest date first, then by id
   const sortedPhotos = [...photos].sort((a, b) => {
@@ -314,10 +294,10 @@ export default function PhotoSection({ photos, onAddPhoto, onDeletePhoto, onLike
         })}
       </div>
 
-      {/* Lightbox — rendered in fixed position, centered in viewport */}
-      <AnimatePresence>
-        {selectedPhoto && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={() => setSelectedPhoto(null)}>
+      {/* Lightbox — rendered via portal directly into document.body so it's always centered on screen, not affected by page scroll/layout */}
+      {selectedPhoto && createPortal(
+        <AnimatePresence>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={() => setSelectedPhoto(null)}>
             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-white p-6 rounded-3xl max-w-2xl w-full flex flex-col items-center relative shadow-2xl border border-pink-100 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => setSelectedPhoto(null)} className="absolute top-4 right-4 bg-rose-500 hover:bg-rose-600 text-white p-2.5 rounded-full shadow-lg border-2 border-white z-50 cursor-pointer"><X size={18} className="stroke-[3.5]" /></button>
               <div className="w-full rounded-2xl overflow-hidden shadow-inner max-h-[55vh] flex items-center justify-center bg-zinc-50 border border-gray-150">
@@ -332,13 +312,14 @@ export default function PhotoSection({ photos, onAddPhoto, onDeletePhoto, onLike
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* Edit modal */}
-      <AnimatePresence>
-        {editingPhoto && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md" onClick={() => setEditingPhoto(null)}>
+      {editingPhoto && createPortal(
+        <AnimatePresence>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md" onClick={() => setEditingPhoto(null)}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-white p-6 rounded-3xl max-w-md w-full relative shadow-2xl border border-pink-100 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => setEditingPhoto(null)} className="absolute top-4 right-4 bg-rose-500 text-white p-2 rounded-full"><X size={16} /></button>
               <h3 className="text-base font-extrabold text-stone-900">✏️ Редактировать момент</h3>
@@ -363,13 +344,14 @@ export default function PhotoSection({ photos, onAddPhoto, onDeletePhoto, onLike
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* Delete confirmation */}
-      <AnimatePresence>
-        {photoToDelete && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setPhotoToDelete(null)}>
+      {photoToDelete && createPortal(
+        <AnimatePresence>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setPhotoToDelete(null)}>
             <motion.div initial={{ scale: 0.95, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 30 }} className="bg-white p-6 rounded-3xl max-w-md w-full text-center relative shadow-2xl border border-pink-100 space-y-4" onClick={(e) => e.stopPropagation()}>
               <div className="w-14 h-14 bg-rose-50 rounded-full flex items-center justify-center mx-auto text-rose-500 animate-pulse"><Heart size={28} className="fill-rose-300" /></div>
               <h3 className="text-base font-extrabold text-stone-900">Сохранено в памяти сердца 💕</h3>
@@ -380,8 +362,9 @@ export default function PhotoSection({ photos, onAddPhoto, onDeletePhoto, onLike
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
