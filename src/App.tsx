@@ -22,10 +22,26 @@ import PhotoSection from './components/PhotoSection';
 export default function App() {
   // Session Access Verification State
   const [unlocked, setUnlocked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [useAlternateDate, setUseAlternateDate] = useState(false);
 
   // Core Static Personalization Names
   const girlName = 'Диана';
   const boyName = 'Марин';
+
+  const startDateObj = new Date(2024, useAlternateDate ? 8 : 6, useAlternateDate ? 1 : 14, 0, 0, 0);
+
+  const thousandDaysDate = new Date(startDateObj.getTime() + 1000 * 24 * 60 * 60 * 1000);
+  const thousandDaysStr = `${thousandDaysDate.getDate().toString().padStart(2, '0')}.${(thousandDaysDate.getMonth() + 1).toString().padStart(2, '0')}.${thousandDaysDate.getFullYear()}`;
+
+  const threeYearsDate = new Date(startDateObj.getFullYear() + 3, startDateObj.getMonth(), startDateObj.getDate());
+  const threeYearsStr = `${threeYearsDate.getDate().toString().padStart(2, '0')}.${(threeYearsDate.getMonth() + 1).toString().padStart(2, '0')}.${threeYearsDate.getFullYear()}`;
+
+  const fiveYearsDate = new Date(startDateObj.getFullYear() + 5, startDateObj.getMonth(), startDateObj.getDate());
+  const fiveYearsStr = `${fiveYearsDate.getDate().toString().padStart(2, '0')}.${(fiveYearsDate.getMonth() + 1).toString().padStart(2, '0')}.${fiveYearsDate.getFullYear()}`;
+
+  const tenYearsDate = new Date(startDateObj.getFullYear() + 10, startDateObj.getMonth(), startDateObj.getDate());
+  const tenYearsStr = `${tenYearsDate.getDate().toString().padStart(2, '0')}.${(tenYearsDate.getMonth() + 1).toString().padStart(2, '0')}.${tenYearsDate.getFullYear()}`;
 
   // Interactive local states (preloaded or from localStorage)
   const [photos, setPhotos] = useState<PhotoMemory[]>(() => {
@@ -103,13 +119,15 @@ export default function App() {
 
   // Dynamic Timers and Anniversary thread
   useEffect(() => {
-    // Start dating date: 14 July 2024
-    const startDate = new Date(2024, 6, 14, 0, 0, 0);
+    // Start dating date: 1 September 2024 (useAlternateDate = true) or 14 July 2024 (useAlternateDate = false)
+    const annivMonth = useAlternateDate ? 8 : 6; // Month: 0-indexed (8 = September, 6 = July)
+    const annivDay = useAlternateDate ? 1 : 14;
+    const startDate = new Date(2024, annivMonth, annivDay, 0, 0, 0);
 
     const updateTimers = () => {
       const now = new Date();
 
-      // 1. Calculate count-UP (How long together since 14.07.2024)
+      // 1. Calculate count-UP (How long together since start date)
       const diffMs = now.getTime() - startDate.getTime();
       const dTogether = Math.floor(diffMs / (1000 * 60 * 60 * 24));
       const hoursTogether = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
@@ -121,29 +139,32 @@ export default function App() {
 
       // 2. Determine exact full years together today
       let yearsNow = now.getFullYear() - 2024;
-      const annivThisYear = new Date(now.getFullYear(), 6, 14, 0, 0, 0);
+      const annivThisYear = new Date(now.getFullYear(), annivMonth, annivDay, 0, 0, 0);
       if (now.getTime() < annivThisYear.getTime()) {
         yearsNow -= 1;
       }
       setCurrentYearsTogether(Math.max(0, yearsNow));
 
-      // 3. Determine if today is exactly the anniversary day (July 14)
-      const isAnnivDay = now.getMonth() === 6 && now.getDate() === 14;
+      // 3. Determine if today is exactly the anniversary day
+      const isAnnivDay = now.getMonth() === annivMonth && now.getDate() === annivDay;
       setIsAnniversaryDay(isAnnivDay);
 
       // 4. Calculate next anniversary dynamically
       const currentYear = now.getFullYear();
       let annivYear = currentYear;
-      let nextAnnivDate = new Date(annivYear, 6, 14, 0, 0, 0);
+      let nextAnnivDate = new Date(annivYear, annivMonth, annivDay, 0, 0, 0);
 
-      // If we are past July 14 of current year, the upcoming is July 14 of next year
+      // If we are past anniversary of current year, the upcoming is next year
       if (now.getTime() >= nextAnnivDate.getTime()) {
         annivYear = currentYear + 1;
-        nextAnnivDate = new Date(annivYear, 6, 14, 0, 0, 0);
+        nextAnnivDate = new Date(annivYear, annivMonth, annivDay, 0, 0, 0);
       }
 
       setNextAnnivNumber(annivYear - 2024);
-      setNextAnnivDateStr(`14.07.${annivYear}`);
+      
+      const padDay = annivDay.toString().padStart(2, '0');
+      const padMonth = (annivMonth + 1).toString().padStart(2, '0');
+      setNextAnnivDateStr(`${padDay}.${padMonth}.${annivYear}`);
 
       // 5. Calculate countdown
       const countdownDiff = nextAnnivDate.getTime() - now.getTime();
@@ -163,7 +184,7 @@ export default function App() {
     updateTimers();
     const intervalRef = setInterval(updateTimers, 1000);
     return () => clearInterval(intervalRef);
-  }, []);
+  }, [useAlternateDate]);
 
   // Click-to-spawn cursor hearts
   const handleScreenClick = (e: React.MouseEvent) => {
@@ -218,7 +239,23 @@ export default function App() {
 
   // Render Password Lock as default shield
   if (!unlocked) {
-    return <PasswordScreen onUnlock={() => setUnlocked(true)} />;
+    return (
+      <PasswordScreen
+        onUnlock={(passwordUsed) => {
+          setUnlocked(true);
+          if (passwordUsed === '525252') {
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
+          }
+          if (passwordUsed === '2029') {
+            setUseAlternateDate(true);
+          } else {
+            setUseAlternateDate(false);
+          }
+        }}
+      />
+    );
   }
 
   return (
@@ -268,11 +305,20 @@ export default function App() {
           </div>
           {/* Sweet sentiment banner and lock option */}
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <span className="text-[10px] bg-rose-100 text-rose-700 font-extrabold px-2.5 py-1 rounded-full uppercase border border-rose-200 shadow-sm">
+                Админ ✨
+              </span>
+            )}
             <div className="text-xs text-rose-500 font-bold flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-full border border-pink-100 shadow-sm">
               <span>Люблю тебя сильно! ❤️</span>
             </div>
             <button
-              onClick={() => setUnlocked(false)}
+              onClick={() => {
+                setUnlocked(false);
+                setIsAdmin(false);
+                setUseAlternateDate(false);
+              }}
               className="p-1.5 hover:bg-neutral-100 text-stone-500 hover:text-rose-500 rounded-full transition-colors border border-neutral-200/60 shadow-sm"
               title="Заблокировать экран"
               id="lock-screen-button"
@@ -304,7 +350,7 @@ export default function App() {
               </div>
               <span className="text-xs font-bold text-stone-500 flex items-center gap-1 bg-neutral-100 rounded-full px-3 py-1">
                 <Calendar size={12} />
-                <span>Начало: 14.07.2024</span>
+                <span>Начало: {useAlternateDate ? '01.09.2024' : '14.07.2024'}</span>
               </span>
             </div>
 
@@ -370,28 +416,28 @@ export default function App() {
             <div className="mt-4 pt-4 border-t border-dashed border-rose-100/60 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-[10px] text-gray-500 font-mono">
               <div className="p-2 bg-rose-50/30 rounded-xl border border-pink-50">
                 <span className="block font-bold text-rose-500 mb-0.5">1000 Дней Вместе</span>
-                <span className="text-gray-400 block mb-0.5">10.04.2027</span>
+                <span className="text-gray-400 block mb-0.5">{thousandDaysStr}</span>
                 <span className="bg-rose-100 text-rose-600 font-bold px-1 py-0.2 rounded-full font-sans text-[9px]">
                   {daysTogether >= 1000 ? '✅ Пройдено' : `Осталось ${1000 - daysTogether} дн`}
                 </span>
               </div>
               <div className="p-2 bg-rose-50/30 rounded-xl border border-pink-50">
                 <span className="block font-bold text-rose-500 mb-0.5">3 Года в любви</span>
-                <span className="text-gray-400 block mb-0.5">14.07.2027</span>
+                <span className="text-gray-400 block mb-0.5">{threeYearsStr}</span>
                 <span className="bg-rose-100 text-rose-600 font-bold px-1 py-0.2 rounded-full font-sans text-[9px]">
                   {daysTogether >= 1095 ? '✅ Пройдено' : `Осталось ${1095 - daysTogether} дн`}
                 </span>
               </div>
               <div className="p-2 bg-rose-50/30 rounded-xl border border-pink-50">
                 <span className="block font-bold text-rose-500 mb-0.5">5 Лет Вместе</span>
-                <span className="text-gray-400 block mb-0.5">14.07.2029</span>
+                <span className="text-gray-400 block mb-0.5">{fiveYearsStr}</span>
                 <span className="bg-rose-100 text-rose-600 font-bold px-1 py-0.2 rounded-full font-sans text-[9px]">
                   {daysTogether >= 1826 ? '✅ Пройдено' : `Осталось ${1826 - daysTogether} дн`}
                 </span>
               </div>
               <div className="p-2 bg-rose-50/30 rounded-xl border border-pink-50">
                 <span className="block font-bold text-rose-500 mb-0.5">10 Лет Счастья</span>
-                <span className="text-gray-400 block mb-0.5">14.07.2034</span>
+                <span className="text-gray-400 block mb-0.5">{tenYearsStr}</span>
                 <span className="bg-rose-100 text-rose-600 font-bold px-1 py-0.2 rounded-full font-sans text-[9px]">
                   {daysTogether >= 3652 ? '✅ Пройдено' : `Осталось ${3652 - daysTogether} дн`}
                 </span>
@@ -413,6 +459,7 @@ export default function App() {
             onAddPhoto={handleAddPhoto}
             onDeletePhoto={handleDeletePhoto}
             onLikePhoto={handleLikePhoto}
+            isAdmin={isAdmin}
           />
         </div>
 
