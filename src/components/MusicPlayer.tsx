@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Play, Pause, Volume2, VolumeX, Sparkles, Heart, Disc } from 'lucide-react';
 
 export default function MusicPlayer() {
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(0.7);
@@ -21,27 +21,26 @@ export default function MusicPlayer() {
     }
   }, [volume, isMuted]);
 
-  // Handle autoplay and user gesture bypass
+  // Handle autoplay on mount or browser gesture block
   useEffect(() => {
-    let playTimeout = setTimeout(() => {
-      if (audioPlayerRef.current && isPlaying) {
-        audioPlayerRef.current.play().catch((err) => {
-          console.log("Playback blocked by browser until first interaction.");
-        });
-      }
-    }, 500);
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.play().catch((err) => {
+        console.log("Autoplay blocked by browser. Waiting for user interaction.");
+      });
+    }
 
-    const handleGesture = () => {
-      if (audioPlayerRef.current && isPlaying && audioPlayerRef.current.paused) {
+    const handleFirstClick = () => {
+      if (audioPlayerRef.current && audioPlayerRef.current.paused) {
         audioPlayerRef.current.play().catch(() => {});
       }
+      window.removeEventListener('click', handleFirstClick);
     };
-    window.addEventListener('click', handleGesture);
+
+    window.addEventListener('click', handleFirstClick);
     return () => {
-      clearTimeout(playTimeout);
-      window.removeEventListener('click', handleGesture);
+      window.removeEventListener('click', handleFirstClick);
     };
-  }, [isPlaying]);
+  }, []);
 
   // Spawns floating hearts over the vinyl
   useEffect(() => {
@@ -68,21 +67,17 @@ export default function MusicPlayer() {
     if (audioPlayerRef.current) {
       audioPlayerRef.current.currentTime = 0;
       audioPlayerRef.current.play().catch(() => {});
-      setIsPlaying(true);
     }
   };
 
   const togglePlay = () => {
     if (audioPlayerRef.current) {
-      if (isPlaying) {
-        audioPlayerRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioPlayerRef.current.play().then(() => {
-          setIsPlaying(true);
-        }).catch((err) => {
+      if (audioPlayerRef.current.paused) {
+        audioPlayerRef.current.play().catch((err) => {
           console.error("Audio playback error:", err);
         });
+      } else {
+        audioPlayerRef.current.pause();
       }
     }
   };
@@ -108,6 +103,8 @@ export default function MusicPlayer() {
         src={mp3Src}
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleAudioEnded}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
         preload="auto"
         autoPlay
       />

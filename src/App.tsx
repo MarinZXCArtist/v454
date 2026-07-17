@@ -8,7 +8,9 @@ import {
   Lock
 } from 'lucide-react';
 import { collection, getDocs, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db } from './lib/firebase';
+import { dbContainer, dbDefault, dbNamed, dbOld } from './lib/firebase';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Data and types imports
 import { PhotoMemory } from './types';
@@ -21,9 +23,27 @@ import PhotoSection from './components/PhotoSection';
 
 export default function App() {
   // Session Access Verification State
-  const [unlocked, setUnlocked] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [useAlternateDate, setUseAlternateDate] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => {
+    try {
+      return localStorage.getItem('anniv_unlocked') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [isAdmin, setIsAdmin] = useState(() => {
+    try {
+      return localStorage.getItem('anniv_is_admin') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [useAlternateDate, setUseAlternateDate] = useState(() => {
+    try {
+      return localStorage.getItem('anniv_use_alternate_date') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   // Core Static Personalization Names
   const girlName = 'Диана';
@@ -57,28 +77,41 @@ export default function App() {
   // Load photos from Firestore in real-time on mount
   useEffect(() => {
     const syncPhotos = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'photos'));
-        const loaded: PhotoMemory[] = [];
-        querySnapshot.forEach((docSnapshot) => {
-          loaded.push({ id: docSnapshot.id, ...docSnapshot.data() } as PhotoMemory);
-        });
+      // We will try these databases in order of preference to locate existing photos:
+      const dbsToTry = [
+        { instance: dbOld, name: 'dbOld' },
+        { instance: dbNamed, name: 'dbNamed' },
+        { instance: dbDefault, name: 'dbDefault' }
+      ];
 
-        if (loaded.length > 0) {
-          // Sort photos to show latest added first by numerical photo ID comparison
-          loaded.sort((a, b) => {
-            const numA = Number(a.id) || 0;
-            const numB = Number(b.id) || 0;
-            return numB - numA;
+      for (const dbObj of dbsToTry) {
+        try {
+          if (!dbObj.instance) continue;
+          const querySnapshot = await getDocs(collection(dbObj.instance, 'photos'));
+          const loaded: PhotoMemory[] = [];
+          querySnapshot.forEach((docSnapshot) => {
+            loaded.push({ id: docSnapshot.id, ...docSnapshot.data() } as PhotoMemory);
           });
-          setPhotos(loaded);
-        } else {
-          // Default to empty array if nothing in DB, do not auto-seed demo pictures
-          setPhotos([]);
+
+          if (loaded.length > 0) {
+            dbContainer.current = dbObj.instance;
+            loaded.sort((a, b) => {
+              const numA = Number(a.id) || 0;
+              const numB = Number(b.id) || 0;
+              return numB - numA;
+            });
+            setPhotos(loaded);
+            console.log(`Successfully synced photos from ${dbObj.name}`);
+            return;
+          }
+        } catch (e) {
+          console.warn(`Could not sync from database ${dbObj.name}:`, e);
         }
-      } catch (err) {
-        console.error('Failed to load photos from Firestore:', err);
       }
+
+      // If absolutely everything is empty, default to dbOld so they write to dbOld
+      dbContainer.current = dbOld;
+      setPhotos([]);
     };
     
     syncPhotos();
@@ -201,7 +234,7 @@ export default function App() {
 
     // 2. Write to Firestore in background without blocking the UI
     try {
-      await setDoc(doc(db, 'photos', p.id), p);
+      await setDoc(doc(dbContainer.current, 'photos', p.id), p);
     } catch (err) {
       console.error('Error saving new photo to Firestore:', err);
     }
@@ -213,7 +246,7 @@ export default function App() {
 
     // 2. Perform delete in Firestore in background
     try {
-      await deleteDoc(doc(db, 'photos', id));
+      await deleteDoc(doc(dbContainer.current, 'photos', id));
     } catch (err) {
       console.error('Error deleting photo from Firestore:', err);
     }
@@ -226,7 +259,7 @@ export default function App() {
           if (p.id === id) {
             const updatedLikes = p.likes + 1;
             // Async background update in FB
-            updateDoc(doc(db, 'photos', id), { likes: updatedLikes }).catch(e => console.error(e));
+            updateDoc(doc(dbContainer.current, 'photos', id), { likes: updatedLikes }).catch(e => console.error(e));
             return { ...p, likes: updatedLikes };
           }
           return p;
@@ -243,15 +276,32 @@ export default function App() {
       <PasswordScreen
         onUnlock={(passwordUsed) => {
           setUnlocked(true);
+          try {
+            localStorage.setItem('anniv_unlocked', 'true');
+          } catch {}
+
           if (passwordUsed === '525252') {
             setIsAdmin(true);
+            try {
+              localStorage.setItem('anniv_is_admin', 'true');
+            } catch {}
           } else {
             setIsAdmin(false);
+            try {
+              localStorage.setItem('anniv_is_admin', 'false');
+            } catch {}
           }
+
           if (passwordUsed === '2029') {
             setUseAlternateDate(true);
+            try {
+              localStorage.setItem('anniv_use_alternate_date', 'true');
+            } catch {}
           } else {
             setUseAlternateDate(false);
+            try {
+              localStorage.setItem('anniv_use_alternate_date', 'false');
+            } catch {}
           }
         }}
       />
@@ -264,6 +314,9 @@ export default function App() {
       className="min-h-screen bg-gradient-to-tr from-[#FFF5F5] via-[#FFF2F4] to-[#FFF9FB] flex flex-col relative font-sans text-stone-800"
       id="main-app-viewport"
     >
+      <Analytics />
+      <SpeedInsights />
+
       {/* Click Particles Engine */}
       <div className="fixed inset-0 pointer-events-none z-50">
         <AnimatePresence>
@@ -318,6 +371,11 @@ export default function App() {
                 setUnlocked(false);
                 setIsAdmin(false);
                 setUseAlternateDate(false);
+                try {
+                  localStorage.setItem('anniv_unlocked', 'false');
+                  localStorage.setItem('anniv_is_admin', 'false');
+                  localStorage.setItem('anniv_use_alternate_date', 'false');
+                } catch {}
               }}
               className="p-1.5 hover:bg-neutral-100 text-stone-500 hover:text-rose-500 rounded-full transition-colors border border-neutral-200/60 shadow-sm"
               title="Заблокировать экран"
