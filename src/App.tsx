@@ -109,9 +109,16 @@ export default function App() {
         }
       }
 
-      // If absolutely everything is empty, default to dbOld so they write to dbOld
+      // If absolutely everything is empty, default to dbOld so they write to dbOld.
+      // We do NOT clear the state to empty, we keep initialPhotoMemories/local photos,
+      // and we automatically seed initialPhotoMemories to dbOld in the background!
       dbContainer.current = dbOld;
-      setPhotos([]);
+      console.log('All Firestore databases are empty. Seeding initial photo memories to dbOld...');
+      for (const p of initialPhotoMemories) {
+        setDoc(doc(dbOld, 'photos', p.id), p).catch(err => {
+          console.error(`Failed to seed photo ${p.id} to Firestore:`, err);
+        });
+      }
     };
     
     syncPhotos();
