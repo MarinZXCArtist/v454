@@ -171,73 +171,13 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ photos, isAdmin, onO
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {sortedPhotos.map((photo) => (
-            <motion.div
+            <PhotoGridCard
               key={photo.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setSelectedPhoto(photo)}
-              className="group relative bg-white rounded-3xl overflow-hidden border border-rose-100 romantic-card-shadow hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col"
-            >
-              {/* Image Box */}
-              <div className="relative aspect-4/3 w-full bg-rose-50 overflow-hidden">
-                <img
-                  src={photo.url}
-                  alt={photo.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-
-                {/* Category Badge Overlay */}
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold text-rose-600 border border-rose-100 shadow-2xs">
-                  {photo.category}
-                </div>
-
-                {/* Lightbox Icon Hover Overlay */}
-                <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <div className="w-10 h-10 rounded-full bg-white/90 text-rose-600 flex items-center justify-center shadow-lg">
-                    <Maximize2 className="w-5 h-5" />
-                  </div>
-                </div>
-
-                {/* Delete button for Admin */}
-                {isAdmin && (
-                  <button
-                    onClick={(e) => handleDelete(e, photo.id)}
-                    title="Удалить фото"
-                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-md hover:bg-rose-700 transition-colors z-20 cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-
-              {/* Card Footer Details */}
-              <div className="p-4 flex-1 flex flex-col justify-between">
-                <div>
-                  <h4 className="font-bold text-slate-800 text-base mb-1 line-clamp-2">
-                    {photo.title}
-                  </h4>
-                  {photo.date && (
-                    <div className="flex items-center gap-1 text-slate-400 text-xs font-medium">
-                      <Calendar className="w-3.5 h-3.5 text-rose-400" />
-                      <span>{photo.date}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-rose-50 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400 font-medium font-handwriting text-sm">
-                    Марин ♥ Диана
-                  </span>
-                  <div className="text-rose-400">
-                    <Heart className="w-4 h-4 fill-rose-400" />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+              photo={photo}
+              isAdmin={isAdmin}
+              onSelect={() => setSelectedPhoto(photo)}
+              onDelete={(e) => handleDelete(e, photo.id)}
+            />
           ))}
         </div>
       )}
@@ -245,67 +185,208 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ photos, isAdmin, onO
       {/* Lightbox Modal */}
       <AnimatePresence>
         {selectedPhoto && (
-          <div
-            onClick={() => setSelectedPhoto(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-rose-200"
-            >
-              <button
-                onClick={() => setSelectedPhoto(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-slate-900/60 hover:bg-slate-900 text-white flex items-center justify-center transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="max-h-[80vh] overflow-hidden bg-slate-950 flex items-center justify-center">
-                <img
-                  src={selectedPhoto.url}
-                  alt={selectedPhoto.title}
-                  className="max-h-[75vh] w-auto object-contain"
-                />
-              </div>
-
-              <div className="p-6 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <span className="inline-block text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200 mb-1">
-                    {selectedPhoto.category}
-                  </span>
-                  <h3 className="text-xl font-bold text-slate-800">
-                    {selectedPhoto.title}
-                  </h3>
-                  {selectedPhoto.date && (
-                    <p className="text-xs text-slate-400 font-medium">
-                      Дата снимка: {selectedPhoto.date}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {isAdmin && (
-                    <button
-                      onClick={(e) => handleDelete(e, selectedPhoto.id)}
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-full shadow-xs transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Удалить</span>
-                    </button>
-                  )}
-                  <div className="flex items-center gap-1.5 text-rose-500 font-bold text-sm bg-rose-50 px-3 py-1.5 rounded-full border border-rose-100">
-                    <Heart className="w-4 h-4 fill-rose-500" />
-                    <span>Марин ♥ Диана</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+          <ModalLightbox
+            photo={selectedPhoto}
+            isAdmin={isAdmin}
+            onClose={() => setSelectedPhoto(null)}
+            onDelete={(e) => handleDelete(e, selectedPhoto.id)}
+          />
         )}
       </AnimatePresence>
     </section>
   );
 };
+
+interface PhotoGridCardProps {
+  photo: PhotoItem;
+  isAdmin: boolean;
+  onSelect: () => void;
+  onDelete: (e: React.MouseEvent) => void;
+}
+
+const PhotoGridCard: React.FC<PhotoGridCardProps> = ({
+  photo,
+  isAdmin,
+  onSelect,
+  onDelete,
+}) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.3 }}
+      onClick={onSelect}
+      className="group relative bg-white rounded-3xl overflow-hidden border border-rose-100 romantic-card-shadow hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col"
+    >
+      {/* Image Box */}
+      <div className="relative aspect-4/3 w-full bg-rose-50/80 overflow-hidden">
+        {/* Skeleton Shimmer Loader (pure subtle animation without text blocks) */}
+        {!isLoaded && !hasError && (
+          <div className="absolute inset-0 bg-gradient-to-r from-rose-100/50 via-pink-50 to-rose-100/50 animate-pulse z-0" />
+        )}
+
+        {/* Fallback if image fails to load */}
+        {hasError ? (
+          <div className="absolute inset-0 bg-rose-50/80 flex flex-col items-center justify-center p-4 text-center">
+            <Camera className="w-6 h-6 text-rose-300" />
+          </div>
+        ) : (
+          <img
+            src={photo.url}
+            alt={photo.title}
+            loading="lazy"
+            onLoad={() => setIsLoaded(true)}
+            onError={() => setHasError(true)}
+            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ${
+              isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            }`}
+          />
+        )}
+
+        {/* Category Badge Overlay */}
+        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold text-rose-600 border border-rose-100 shadow-2xs z-20">
+          {photo.category}
+        </div>
+
+        {/* Lightbox Icon Hover Overlay */}
+        {isLoaded && (
+          <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+            <div className="w-10 h-10 rounded-full bg-white/90 text-rose-600 flex items-center justify-center shadow-lg">
+              <Maximize2 className="w-5 h-5" />
+            </div>
+          </div>
+        )}
+
+        {/* Delete button for Admin */}
+        {isAdmin && (
+          <button
+            onClick={onDelete}
+            title="Удалить фото"
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-md hover:bg-rose-700 transition-colors z-20 cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Card Footer Details */}
+      <div className="p-4 flex-1 flex flex-col justify-between bg-white">
+        <div>
+          <h4 className="font-bold text-slate-800 text-base mb-1 line-clamp-2">
+            {photo.title}
+          </h4>
+          {photo.date && (
+            <div className="flex items-center gap-1 text-slate-400 text-xs font-medium">
+              <Calendar className="w-3.5 h-3.5 text-rose-400" />
+              <span>{photo.date}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-3 pt-3 border-t border-rose-50 flex items-center justify-between">
+          <span className="text-[11px] text-slate-400 font-medium font-handwriting text-sm">
+            Марин ♥ Диана
+          </span>
+          <div className="text-rose-400">
+            <Heart className="w-4 h-4 fill-rose-400" />
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+interface ModalLightboxProps {
+  photo: PhotoItem;
+  isAdmin: boolean;
+  onClose: () => void;
+  onDelete: (e: React.MouseEvent) => void;
+}
+
+const ModalLightbox: React.FC<ModalLightboxProps> = ({
+  photo,
+  isAdmin,
+  onClose,
+  onDelete,
+}) => {
+  const [isModalLoaded, setIsModalLoaded] = useState(false);
+
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-rose-200 flex flex-col"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center transition-colors cursor-pointer shadow-md"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="relative min-h-[300px] max-h-[75vh] w-full bg-slate-950 flex items-center justify-center overflow-hidden">
+          {/* Subtle dark shimmer in modal without text boxes */}
+          {!isModalLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 animate-pulse" />
+          )}
+
+          <img
+            src={photo.url}
+            alt={photo.title}
+            onLoad={() => setIsModalLoaded(true)}
+            className={`max-h-[75vh] w-auto object-contain transition-opacity duration-300 relative z-10 ${
+              isModalLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        </div>
+
+        <div className="p-6 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="inline-block text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200 mb-1">
+              {photo.category}
+            </span>
+            <h3 className="text-xl font-bold text-slate-800">
+              {photo.title}
+            </h3>
+            {photo.date && (
+              <p className="text-xs text-slate-400 font-medium mt-0.5">
+                Дата снимка: {selectedPhotoDate(photo.date)}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            {isAdmin && (
+              <button
+                onClick={onDelete}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-full shadow-xs transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Удалить</span>
+              </button>
+            )}
+            <div className="flex items-center gap-1.5 text-rose-500 font-bold text-sm bg-rose-50 px-3 py-1.5 rounded-full border border-rose-100">
+              <Heart className="w-4 h-4 fill-rose-500" />
+              <span>Марин ♥ Диана</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+function selectedPhotoDate(d?: string) {
+  return d || '';
+}
