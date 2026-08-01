@@ -1,10 +1,12 @@
 {
-  "projectId": "luminous-appliance-jszp9",
-  "appId": "1:230978222356:web:18c0a922dc9573ea6eaa01",
-  "apiKey": "AIzaSyDuAOf59tmTguJr0rvgvDutt-G-UYy04_c",
-  "authDomain": "luminous-appliance-jszp9.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-9882fd1b-7b16-48e6-8cb8-5be9b8cd298c",
-  "storageBucket": "luminous-appliance-jszp9.firebasestorage.app",
-  "messagingSenderId": "230978222356",
-  "measurementId": ""
+  "projectId": "zxchub-56007",
+  "appId": "1:700642148235:web:8ee541c7586ca3d341398e",
+  "apiKey": "AIzaSyCe6gccdT4lEhJAuje7mPHP20bcyRiSkWM",
+  "authDomain": "zxchub-56007.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-b0bf5817-1fa7-4694-be1b-f26adb0ebe6d",
+  "storageBucket": "zxchub-56007.firebasestorage.app",
+  "messagingSenderId": "700642148235",
+  "measurementId": "",
+  "oAuthClientId": "700642148235-9i8nk8k3f8gsbu1ej1psfhvv9oencvn0.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }

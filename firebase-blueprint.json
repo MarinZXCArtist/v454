@@ -1,35 +1,27 @@
 {
-  "collections": [
-    {
-      "path": "photos",
-      "schema": {
-        "id": "string",
-        "src": "string",
-        "alt": "string",
-        "date": "string",
-        "caption": "string",
-        "title": "string?",
-        "likes": "number",
-        "scale": "number?",
-        "rotate": "number?",
-        "shiftX": "number?",
-        "shiftY": "number?",
-        "filter": "string?",
-        "cardSize": "string?",
-        "createdAt": "timestamp?"
+  "entities": {
+    "photos": {
+      "title": "Photo",
+      "description": "Love story photos uploaded by admin",
+      "properties": {
+        "url": { "type": "string" },
+        "title": { "type": "string" },
+        "date": { "type": "string" },
+        "category": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "likes": { "type": "number" }
       },
-      "rules": {
-        "allow": {
-          "read": "true",
-          "create": "true",
-          "update": "true",
-          "delete": "true"
-        }
-      }
+      "required": ["url", "title", "createdAt"]
+    },
+    "quotes": {
+      "title": "Quote",
+      "description": "Sweet memories and quotes",
+      "properties": {
+        "text": { "type": "string" },
+        "author": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["text"]
     }
-  ],
-  "rules": {
-    "version": "2",
-    "service": "cloud.firestore"
   }
 }
