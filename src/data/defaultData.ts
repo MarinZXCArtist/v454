@@ -3,8 +3,8 @@ import { PhotoItem, QuoteItem, SongSettings } from '../types';
 export const DEFAULT_PHOTOS: PhotoItem[] = [
   {
     id: 'def-1',
-    url: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80&w=1000',
-    title: 'Наша самая первая совместная прогулка',
+    url: 'https://bigfoto.name/uploads/posts/2022-03/1647521419_1-bigfoto-name-p-loading-1.png',
+    title: 'Фотки грузятся любимая, подожди секунду',
     date: '14.07.2024',
     category: 'Свидания',
     createdAt: Date.now() - 800000,
@@ -12,8 +12,8 @@ export const DEFAULT_PHOTOS: PhotoItem[] = [
   },
   {
     id: 'def-2',
-    url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&q=80&w=1000',
-    title: 'Уютный вечер и наши бесконечные разговоры',
+    url: 'https://bigfoto.name/uploads/posts/2022-03/1647521419_1-bigfoto-name-p-loading-1.png',
+    title: 'Фотки грузятся любимая, подожди секунду',
     date: '01.09.2024',
     category: 'Милости',
     createdAt: Date.now() - 700000,
@@ -21,8 +21,8 @@ export const DEFAULT_PHOTOS: PhotoItem[] = [
   },
   {
     id: 'def-3',
-    url: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&q=80&w=1000',
-    title: 'Незабываемая поездка и невероятный закат',
+    url: 'https://bigfoto.name/uploads/posts/2022-03/1647521419_1-bigfoto-name-p-loading-1.png',
+    title: 'Фотки грузятся любимая, подожди секунду',
     date: '15.10.2024',
     category: 'Путешествия',
     createdAt: Date.now() - 600000,
@@ -30,8 +30,8 @@ export const DEFAULT_PHOTOS: PhotoItem[] = [
   },
   {
     id: 'def-4',
-    url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=1000',
-    title: 'Твоя самая искренняя улыбка',
+    url: 'https://bigfoto.name/uploads/posts/2022-03/1647521419_1-bigfoto-name-p-loading-1.png',
+    title: 'Фотки грузятся любимая, подожди секунду',
     date: '31.12.2024',
     category: 'Любимые',
     createdAt: Date.now() - 500000,
