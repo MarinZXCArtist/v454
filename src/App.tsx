@@ -23,6 +23,7 @@ export default function App() {
   const [song, setSong] = useState<SongSettings>(DEFAULT_SONG);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isAnniversaryModalOpen, setIsAnniversaryModalOpen] = useState(false);
+  const [autoPlayMusic, setAutoPlayMusic] = useState(false);
 
   // Subscribe to real-time Firebase Firestore updates
   useEffect(() => {
@@ -82,6 +83,7 @@ export default function App() {
 
   const handlePasswordSuccess = (selectedMode: PasswordMode) => {
     setMode(selectedMode);
+    setAutoPlayMusic(true);
     if (selectedMode) {
       sessionStorage.setItem('love_mode', selectedMode);
     }
@@ -92,6 +94,7 @@ export default function App() {
 
   const handleLockSession = () => {
     setMode(null);
+    setAutoPlayMusic(false);
     sessionStorage.removeItem('love_mode');
   };
 
@@ -143,7 +146,7 @@ export default function App() {
               </div>
 
               <div className="lg:col-span-1 space-y-6">
-                <AudioPlayerCard song={song} />
+                <AudioPlayerCard song={song} autoPlay={autoPlayMusic} />
                 <LoveReasonsJar />
               </div>
             </div>

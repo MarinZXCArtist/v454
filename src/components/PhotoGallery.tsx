@@ -21,26 +21,57 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ photos, isAdmin, onO
     ? photos
     : photos.filter((p) => p.category === activeCategory);
 
-  // Sort photos from newest to oldest (newest first)
-  const sortedPhotos = [...filteredPhotos].sort((a, b) => {
-    // 1. Compare by createdAt timestamp if available
-    const timeA = a.createdAt || 0;
-    const timeB = b.createdAt || 0;
-    if (timeA !== timeB) return timeB - timeA;
-
-    // 2. Fallback comparison by date string parsing if available (e.g. DD.MM.YYYY or YYYY-MM-DD)
-    if (a.date && b.date) {
-      const parseDate = (dStr: string) => {
-        const parts = dStr.split('.');
-        if (parts.length === 3) {
-          return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime();
+  // Helper to parse dates strictly in full formats (DD.MM.YYYY, DD/MM/YYYY, YYYY-MM-DD)
+  const getPhotoTimestamp = (p: PhotoItem): number => {
+    if (p.date) {
+      const trimmed = p.date.trim();
+      // Check DD.MM.YYYY or D.M.YYYY format (must have 4-digit year, valid month 1-12, valid day 1-31)
+      const dotParts = trimmed.split('.');
+      if (dotParts.length === 3 && dotParts[2].length === 4) {
+        const day = parseInt(dotParts[0], 10);
+        const month = parseInt(dotParts[1], 10) - 1;
+        const year = parseInt(dotParts[2], 10);
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year) && day >= 1 && day <= 31 && month >= 0 && month <= 11) {
+          return new Date(year, month, day).getTime();
         }
-        return new Date(dStr).getTime() || 0;
-      };
-      return parseDate(b.date) - parseDate(a.date);
+      }
+      // Check DD/MM/YYYY
+      const slashParts = trimmed.split('/');
+      if (slashParts.length === 3 && slashParts[2].length === 4) {
+        const day = parseInt(slashParts[0], 10);
+        const month = parseInt(slashParts[1], 10) - 1;
+        const year = parseInt(slashParts[2], 10);
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year) && day >= 1 && day <= 31 && month >= 0 && month <= 11) {
+          return new Date(year, month, day).getTime();
+        }
+      }
+      // Check YYYY-MM-DD
+      const dashParts = trimmed.split('-');
+      if (dashParts.length === 3 && dashParts[0].length === 4) {
+        const year = parseInt(dashParts[0], 10);
+        const month = parseInt(dashParts[1], 10) - 1;
+        const day = parseInt(dashParts[2], 10);
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year) && day >= 1 && day <= 31 && month >= 0 && month <= 11) {
+          return new Date(year, month, day).getTime();
+        }
+      }
     }
 
-    return 0;
+    // Incomplete, non-standard or missing date -> return -1 so it goes below all valid dated photos
+    return -1;
+  };
+
+  // Sort photos from newest date to oldest date; invalid/incomplete dates go to the bottom
+  const sortedPhotos = [...filteredPhotos].sort((a, b) => {
+    const timeA = getPhotoTimestamp(a);
+    const timeB = getPhotoTimestamp(b);
+    
+    if (timeA !== timeB) {
+      return timeB - timeA; // Higher timestamp (newest date) first; -1 at the bottom
+    }
+
+    // Secondary comparison by createdAt for items with same timestamp / invalid date
+    return (b.createdAt || 0) - (a.createdAt || 0);
   });
 
   const handleLike = async (e: React.MouseEvent, photoId: string) => {

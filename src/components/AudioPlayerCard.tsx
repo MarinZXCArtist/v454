@@ -4,9 +4,10 @@ import { SongSettings } from '../types';
 
 interface AudioPlayerCardProps {
   song: SongSettings;
+  autoPlay?: boolean;
 }
 
-export const AudioPlayerCard: React.FC<AudioPlayerCardProps> = ({ song }) => {
+export const AudioPlayerCard: React.FC<AudioPlayerCardProps> = ({ song, autoPlay }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
@@ -15,6 +16,15 @@ export const AudioPlayerCard: React.FC<AudioPlayerCardProps> = ({ song }) => {
   const [duration, setDuration] = useState('0:00');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (autoPlay && audioRef.current) {
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => console.log('Audio autoplay blocked by browser:', err));
+    }
+  }, [autoPlay]);
 
   useEffect(() => {
     if (audioRef.current) {
